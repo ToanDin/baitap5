@@ -1,5 +1,9 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import {MyContextControllerProvider} from "./store"
+import firestore from "@react-native-firebase/firestore"
+import auth from "@react-native-firebase/auth"
+import { useEffect } from "react"
+import{NavigationContainer} from "@react-navigation/native"
+import Router from "./routers/Router"
 
 export default function App() {
   return (
@@ -10,11 +14,44 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const App =()=>{
+  const USERS = firestore().collection('USERS')
+  const admin ={
+    fullName: 'Admin',
+    email: "dinhtoan@gmail.com",
+    password: "12345",
+    phone: "0354252737",
+    address: "BinhDuong",
+    role:"admin"
+
+  }
+  useEffect(()=>{
+    USERS.doc(admin.email)
+    .onSnapshot(
+      u =>{
+        if(!u.exists) 
+        {
+          auth().createUserWithEmailAndPassword(admin.email, admin.password)
+          .then(respone => 
+          {
+            USERS.doc(admin.email).set(admin)
+            console.log("Add new account admin");
+          }
+         )
+      }
+    }
+  )
+}, []);
+return(
+  <MyContextControllerProvider>
+    <NavigationContainer>
+        <Router/>
+    </NavigationContainer>
+    </MyContextControllerProvider>
+ 
+)
+}
+
+export default App
+
+
